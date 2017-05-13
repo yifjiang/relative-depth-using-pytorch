@@ -1,12 +1,11 @@
 import torch
 from torch import nn
-from torch.nn import ModuleList
-from torch.autograd import Variable
 
 class inception(nn.Module):
 	def __init__(self, input_size, config):
+		self.config = config
 		super(inception,self).__init__()
-		self.convs = ModuleList()
+		self.convs = nn.ModuleList()
 
 		# Base 1*1 conv layer
 		self.convs.add_module('conv1',nn.Sequential(
@@ -32,9 +31,12 @@ class inception(nn.Module):
 			conv.add_module('relu2', nn.ReLU(True))
 			self.convs.add_module('conv'+str(i+1),conv)
 
+	def __repr__(self):
+		return "inception"+str(self.config)
+
 	def forward(self, x):
 		ret = []
-		for conv in self.convs:
+		for name,conv in enumerate(self.convs):
 			ret.append(conv(x))
 		return torch.cat(ret,dim=1)
 
