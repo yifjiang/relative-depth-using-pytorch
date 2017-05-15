@@ -6,13 +6,13 @@ class Channels1(nn.Module):
 	def __init__(self):
 		super(Channels1, self).__init__()
 		self.list = nn.ModuleList()
-		self.list.add_module('EE',
+		self.list.append(
 			nn.Sequential(
 				inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
 				inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]])
 				)
-			)
-		self.list.add_module('EEE',
+			) #EE
+		self.list.append(
 			nn.Sequential(
 				nn.AvgPool2d(2),
 				inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
@@ -20,7 +20,7 @@ class Channels1(nn.Module):
 				inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]), 
 				nn.UpsamplingNearest2d(scale_factor=2)
 				)
-			)
+			) #EEE
 
 	def forward(self,x):
 		return self.list[0](x)+self.list[1](x)
@@ -29,13 +29,13 @@ class Channels2(nn.Module):
 	def __init__(self):
 		super(Channels2, self).__init__()
 		self.list = nn.ModuleList()
-		self.list.add_module('EF',
+		self.list.append(
 			nn.Sequential(
 				inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
 				inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]])
 				)
-			)
-		self.list.add_module('EE1EF', 
+			)#EF
+		self.list.append( 
 			nn.Sequential(
 				nn.AvgPool2d(2),
 				inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
@@ -45,7 +45,7 @@ class Channels2(nn.Module):
 				inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]]),
 				nn.UpsamplingNearest2d(scale_factor=2)
 				)
-			)
+			)#EE1EF
 
 	def forward(self,x):
 		return self.list[0](x)+self.list[1](x)
@@ -54,8 +54,7 @@ class Channels3(nn.Module):
 	def __init__(self):
 		super(Channels3, self).__init__()
 		self.list = nn.ModuleList()
-		self.list.add_module(
-			'BD2EG',
+		self.list.append(
 			nn.Sequential(
 				nn.AvgPool2d(2),
 				inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
@@ -65,14 +64,13 @@ class Channels3(nn.Module):
 				inception(256, [[32], [3,32,32], [5,32,32], [7,32,32]]), 
 				nn.UpsamplingNearest2d(scale_factor=2)
 				)
-			)
-		self.list.add_module(
-			'EF',
+			)#BD2EG
+		self.list.append(
 			nn.Sequential(
 				inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
 				inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]])
 				)
-			)
+			)#EF
 
 	def forward(self,x):
 		return self.list[0](x)+self.list[1](x)
@@ -81,8 +79,7 @@ class Channels4(nn.Module):
 	def __init__(self):
 		super(Channels4, self).__init__()
 		self.list = nn.ModuleList()
-		self.list.add_module(
-			'BB3BA',
+		self.list.append(
 			nn.Sequential(
 				nn.AvgPool2d(2),
 				inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
@@ -92,13 +89,12 @@ class Channels4(nn.Module):
 				inception(128, [[16], [3,32,16], [7,32,16], [11,32,16]]),
 				nn.UpsamplingNearest2d(scale_factor=2)
 				)
-			)
-		self.list.add_module(
-			'A',
+			)#BB3BA
+		self.list.append(
 			nn.Sequential(
 				inception(128, [[16], [3,32,16], [7,32,16], [11,32,16]])
 				)
-			)
+			)#A
 
 	def forward(self,x):
 		return self.list[0](x)+self.list[1](x)
@@ -109,10 +105,11 @@ class Model(nn.Module):
 		super(Model, self).__init__()
 
 		# first layer
-		self.blockH = nn.Sequential()
-		self.blockH.add_module('conv', nn.Conv2d(3,128,7,padding=3))
-		self.blockH.add_module('norm', nn.BatchNorm2d(128))
-		self.blockH.add_module('relu', nn.ReLU(True))
+		self.blockH = nn.Sequential(
+			nn.Conv2d(3,128,7,padding=3), 
+			nn.BatchNorm2d(128), 
+			nn.ReLU(True)
+			)
 
 		self._4channels = Channels4()
 
