@@ -8,6 +8,15 @@ from torchvision import transforms
 from PIL import Image
 
 
+_batch_target_relative_depth_gpu = {}
+for i in range(0,g_args.bs):#g_args is from main.py
+	_batch_target_relative_depth_gpu[i] = {}
+	_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor.cuda()
+	_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor.cuda()
+	_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor.cuda()
+	_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor.cuda()
+	_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor.cuda()
+
 class DataLoader(object):
 	"""docstring for DataLoader"""
 	def __init__(self, relative_depth_filename):
@@ -72,18 +81,18 @@ class DataLoader(object):
 	def close():
 		pass
 
-	def mixed_sample_strategy1(batch_size):
+	def mixed_sample_strategy1(self, batch_size):
 		# n_depth = torch.rand(1,1)
 		# n_depth.random_(from=0, to=batch_size)
 		n_depth = random.randint(0,batch_size-1)
 		return n_depth, batch_size - n_depth
 
-	def mixed_sample_strategy2(batch_size):
+	def mixed_sample_strategy2(self, batch_size):
 		n_depth = batch_size/2
 		return n_depth, batch_size - n_depth #careful about the index
 
 
-	def load_indices(depth_indices):
+	def load_indices(self, depth_indices):
 		if depth_indices is not None:
 			n_depth = len(depth_indices)
 		else:
@@ -92,16 +101,9 @@ class DataLoader(object):
 		batch_size = n_depth
 		color = torch.Tensor(batch_size, 3, g_input_height, g_input_width) # now it's a Tensor, remember to make it a Variable
 
-		_batch_target_relative_depth_gpu = {}
 		_batch_target_relative_depth_gpu['n_sample'] = n_depth
 
-		for i in range(0,g_args.bs):#g_args is from main.py
-			_batch_target_relative_depth_gpu[i] = {}
-			_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor.cuda()
-			_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor.cuda()
-			_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor.cuda()
-			_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor.cuda()
-			_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor.cuda()
+
 
 		loader = transforms.Compose(
 			transforms.ToTensor(),
@@ -133,9 +135,12 @@ class DataLoader(object):
 
 		return color.cuda(), _batch_target_relative_depth_gpu
 
-	def load_next_batch(batch_size):
+	def load_next_batch(self, batch_size):
 		depth_indices = self.data_ptr_relative_depth.load_next_batch(batch_size)
 		return self.load_indices(depth_indices)
 
-	def reset():
+	def reset(self):
 		self.current_pos = 1
+
+if __name__ == '__main__':
+	

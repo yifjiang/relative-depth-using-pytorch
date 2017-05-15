@@ -118,6 +118,13 @@ class Model(nn.Module):
 	def forward(self,x):
 		return final(_4channels(blockH(x)))
 
+def f_depth_from_model_output():
+	print(">>>>>>>>>>>>>>>>>>>>>>>>>    depth = model_output")
+	return ____get_depth_from_model_output
+
+def ____get_depth_from_model_output(model_output):
+	return model_output
+
 		
 if __name__ == '__main__':
 	test = Model()

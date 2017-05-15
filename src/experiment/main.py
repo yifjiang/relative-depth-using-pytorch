@@ -3,6 +3,8 @@ import os
 import sys
 import argparse
 
+print('test')
+
 def parseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', default='hourglass3', help='model file definition')
@@ -23,7 +25,13 @@ def parseArgs():
 
 def main():
     g_args = parseArgs()
-    # print(args.bs)
+    
+    if g_args.diw:
+        exec(open('./DataLoader_DIW.py').read())#TODO
+        import validation_crit.validate_crit_DIW
+    else:
+        exec(open('./DataLoader.py').read())
+        import validation_crit.validate_crit1
     
 
 

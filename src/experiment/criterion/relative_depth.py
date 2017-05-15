@@ -14,3 +14,5 @@ class relative_depth_crit(nn.Module):
 
 	def forward(self,z_A,z_B,ground_truth):
 		return __loss_func(z_A, z_B, ground_truth)
+
+		#TODO
