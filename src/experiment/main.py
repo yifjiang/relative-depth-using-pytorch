@@ -18,11 +18,11 @@ def parseArgs():
     parser.add_argument('-ep', default=10 , type = int , help = 'Epochs')
     parser.add_argument('-start_from', default='' , help = 'Start from previous model')
     parser.add_argument('-diw', default=False , type = bool , help = 'Is training on DIW dataset')
-    args = parser.parse_args()
-    return args
+    g_args = parser.parse_args()
+    return g_args
 
 def main():
-    args = parseArgs()
+    g_args = parseArgs()
     # print(args.bs)
     
 
