@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.autograd import Variable
 
 class inception(nn.Module):
 	def __init__(self, input_size, config):
@@ -8,7 +9,7 @@ class inception(nn.Module):
 		self.convs = nn.ModuleList()
 
 		# Base 1*1 conv layer
-		self.convs.add_module('conv1',nn.Sequential(
+		self.convs.append(nn.Sequential(
 			nn.Conv2d(input_size, config[0][0],1),
 			nn.BatchNorm2d(config[0][0],affine=False),
 			nn.ReLU(True),
@@ -16,30 +17,39 @@ class inception(nn.Module):
 
 		# Additional layers
 		for i in range(1, len(config)):
-			conv = nn.Sequential()
 			filt = config[i][0]
-			pad = (filt-1)/2
+			pad = int((float(filt)-1)/2)
 			out_a = config[i][1]
 			out_b = config[i][2]
-			# Reduction
-			conv.add_module('conv1times1', nn.Conv2d(input_size, out_a,1))
-			conv.add_module('norm1', nn.BatchNorm2d(out_a,affine=False))
-			conv.add_module('relu1', nn.ReLU(True))
-			# Spatial Convolution
-			conv.add_module('conv', nn.Conv2d(out_a, out_b, filt,padding=pad))
-			conv.add_module('norm2', nn.BatchNorm2d(out_b,affine=False))
-			conv.add_module('relu2', nn.ReLU(True))
-			self.convs.add_module('conv'+str(i+1),conv)
+			conv = nn.Sequential(
+				nn.Conv2d(input_size, out_a,1),
+				nn.BatchNorm2d(out_a,affine=False),
+				nn.ReLU(True),
+				nn.Conv2d(out_a, out_b, filt,padding=pad),
+				nn.BatchNorm2d(out_b,affine=False),
+				nn.ReLU(True)
+				)
+			self.convs.append(conv)
 
 	def __repr__(self):
 		return "inception"+str(self.config)
 
 	def forward(self, x):
 		ret = []
-		for name,conv in enumerate(self.convs):
+		i = 0
+		for conv in (self.convs):
 			ret.append(conv(x))
+			i+=1
 		return torch.cat(ret,dim=1)
 
 if __name__ == '__main__':
 	testModule = inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]])
 	print(testModule)
+	x = Variable(torch.rand(2,256,125,125))
+	# conv = nn.Conv2d(256, 32,1)
+	# norm = nn.BatchNorm2d(32,affine=False)
+	# relu = nn.ReLU(True)
+	# conv2 = nn.Conv2d(32,64,3,padding=1)
+	# norm2 = nn.BatchNorm2d(64,affine=False)
+	# print(relu(norm2(conv2(relu(norm(conv(x)))))))
+	print(testModule(x))

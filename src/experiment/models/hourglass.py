@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.autograd import Variable
 from layers.inception import inception
 
 class Channels1(nn.Module):
@@ -67,10 +68,10 @@ class Channels3(nn.Module):
 			)#BD2EG
 		self.list.append(
 			nn.Sequential(
-				inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
-				inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]])
+				inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]), 
+				inception(128, [[32], [3,64,32], [7,64,32], [11,64,32]])
 				)
-			)#EF
+			)#BC
 
 	def forward(self,x):
 		return self.list[0](x)+self.list[1](x)
@@ -116,7 +117,11 @@ class Model(nn.Module):
 		self.final = nn.Conv2d(64,1,3,padding=1)
 
 	def forward(self,x):
-		return final(_4channels(blockH(x)))
+		return self.final(self._4channels(self.blockH(x)))
+
+from criterion.relative_depth import relative_depth_crit
+def get_criterion():
+	return relative_depth_crit()
 
 def f_depth_from_model_output():
 	print(">>>>>>>>>>>>>>>>>>>>>>>>>    depth = model_output")
@@ -127,5 +132,7 @@ def ____get_depth_from_model_output(model_output):
 
 		
 if __name__ == '__main__':
-	test = Model()
+	test = Model().cuda()
 	print(test)
+	x = Variable(torch.rand(1,3,320,320)).cuda()
+	print(test(x))
