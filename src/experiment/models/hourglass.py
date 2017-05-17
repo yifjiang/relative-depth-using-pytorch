@@ -134,5 +134,5 @@ def ____get_depth_from_model_output(model_output):
 if __name__ == '__main__':
 	test = Model().cuda()
 	print(test)
-	x = Variable(torch.rand(1,3,320,320)).cuda()
+	x = Variable(torch.rand(1,3,320,320).cuda())
 	print(test(x))
