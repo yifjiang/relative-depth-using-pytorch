@@ -13,7 +13,8 @@ class relative_depth_crit(nn.Module):
 
 	def __loss_func_arr(self, z_A, z_B, ground_truth):
 		mask = torch.abs(ground_truth)
-		return -F.logsigmoid(ground_truth*(z_A-z_B))*mask + (1-mask)*(z_A-z_B)*(z_A-z_B)
+		# return -F.logsigmoid(-ground_truth*(z_A-z_B))*mask + (1-mask)*(z_A-z_B)*(z_A-z_B)
+		return mask*torch.log(1+torch.exp(-ground_truth*(z_A-z_B)))+(1-mask)*(z_A-z_B)*(z_A-z_B)
 
 	def __init__(self):
 		super(relative_depth_crit, self).__init__()
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 	# mean.backward()
 	# print(z_A.grad)
 	# print(z_B.grad)
-	x = Variable(torch.rand(1,3,320,320).cuda(), requires_grad = True)
+	x = Variable(torch.rand(1,1,320,320).cuda(), requires_grad = True)
 	target = {}
 	target[0] = {}
 	target[0]['x_A'] = Variable(torch.Tensor([0,1,2,3,4,5])).cuda()
