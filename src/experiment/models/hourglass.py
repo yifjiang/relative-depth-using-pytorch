@@ -119,6 +119,9 @@ class Model(nn.Module):
 	def forward(self,x):
 		return self.final(self._4channels(self.blockH(x)))
 
+def get_model():
+	return Model()
+
 from criterion.relative_depth import relative_depth_crit
 def get_criterion():
 	return relative_depth_crit()
