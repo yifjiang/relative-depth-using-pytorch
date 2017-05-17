@@ -11,11 +11,11 @@ from PIL import Image
 _batch_target_relative_depth_gpu = {}
 for i in range(0,g_args.bs):#g_args is from main.py
 	_batch_target_relative_depth_gpu[i] = {}
-	_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor.cuda()
-	_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor.cuda()
-	_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor.cuda()
-	_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor.cuda()
-	_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor.cuda()
+	_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor().cuda()
+	_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor().cuda()
+	_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor().cuda()
+	_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor().cuda()
+	_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor().cuda()
 
 class DataLoader(object):
 	"""docstring for DataLoader"""
@@ -32,6 +32,7 @@ class DataLoader(object):
 		splits = line.split(',')
 		sample = {}
 		sample['img_filename'] = splits[0]
+		# print(splits)
 		sample['n_point'] = int(splits[2])
 		return sample
 
@@ -51,8 +52,11 @@ class DataLoader(object):
 		_sample_idx = 0
 		while _sample_idx < _n_lines:
 			this_line = csv_file_handle.readline()
-			_handle[_sample_idx] = parsing_func(this_line)
-			_sample_idx+=1
+			if this_line != '':
+				_handle[_sample_idx] = parsing_func(this_line)
+				_sample_idx+=1
+			else:
+				_n_lines-=1
 
 		csv_file_handle.close()
 
@@ -68,10 +72,10 @@ class DataLoader(object):
 				print("executing:{}".format(command))
 				os.system(command)
 
-				self.relative_depth_handle = parse_csv(_simplified_relative_depth_filename, parse_relative_depth_line)
+			self.relative_depth_handle = self.parse_csv(_simplified_relative_depth_filename, self.parse_relative_depth_line)
 
-				hdf5_filename = relative_depth_filename.replace(',csv', '.h5')
-				self.relative_depth_handle['hdf5_handle'] = h5py.File(hdf5_filename, 'r')
+			hdf5_filename = relative_depth_filename.replace('.csv', '.h5')
+			self.relative_depth_handle['hdf5_handle'] = h5py.File(hdf5_filename, 'r')
 
 		else:
 			self.relative_depth_handle = {}
@@ -105,10 +109,11 @@ class DataLoader(object):
 
 
 
-		loader = transforms.Compose(
-			transforms.ToTensor(),
-			# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
-			)
+		# loader = transforms.Compose(
+		# 	transforms.ToTensor(),
+		# 	# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
+		# 	)
+		loader = transforms.ToTensor()
 
 		for i in range(0,n_depth):
 			idx = depth_indices[i]
@@ -121,7 +126,11 @@ class DataLoader(object):
 			color[i,:,:,:].copy_(image)
 
 			_hdf5_offset = 5*idx #zero-indexed
+			print(self.relative_depth_handle)
 			_this_sample_hdf5 = self.relative_depth_handle['hdf5_handle']['/data'][_hdf5_offset:_hdf5_offset+5,0:n_point]#todo:check this
+			print(_this_sample_hdf5)
+			print(type(_this_sample_hdf5))
+			print(_this_sample_hdf5.size)
 
 			assert(_this_sample_hdf5.size()[0] == 5)
 			assert(_this_sample_hdf5.size()[1] == n_point)
@@ -141,6 +150,3 @@ class DataLoader(object):
 
 	def reset(self):
 		self.current_pos = 1
-
-if __name__ == '__main__':
-	

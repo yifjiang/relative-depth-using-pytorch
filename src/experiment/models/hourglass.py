@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.autograd import Variable
-from layers.inception import inception
+from .layers.inception import inception
 
 class Channels1(nn.Module):
 	def __init__(self):
@@ -122,7 +122,7 @@ class Model(nn.Module):
 def get_model():
 	return Model().cuda()
 
-from criterion.relative_depth import relative_depth_crit
+from .criterion.relative_depth import relative_depth_crit
 def get_criterion():
 	return relative_depth_crit().cuda()
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
 	loss = c(test(x),target)
 	print(loss)
 	o = optim.Adam(test.parameters())
-	for i in range(0,10):
+	for i in range(0,30):
 		o.zero_grad()
 		loss.backward()
 		o.step()

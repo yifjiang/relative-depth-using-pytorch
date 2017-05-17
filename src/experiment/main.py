@@ -1,5 +1,6 @@
 import torch
 import torch.optim as optim
+import shutil
 import os
 import sys
 import argparse
@@ -64,7 +65,7 @@ def save_best_model(model, directory, config, iteration):
     torch.save(model, directory+'/Best_model_period'+str(model.period)+'.pt')
 
 
-# main
+## main
 g_args = parseArgs()
 
 if g_args.diw:
@@ -73,22 +74,25 @@ if g_args.diw:
 else:
     exec(open('./DataLoader.py').read())
     from validation_crit.validate_crit1 import *
+exec(open('load_data.py').read())
 train_loader = TrainDataLoader()
 valid_loader = ValidDataLoader()
 
 if g_args.it == 0:
-    g_args.it = g_args.ep * (train_loader.n_relative_depth_sample)/g_args.bs
+    g_args.it = int(g_args.ep * (train_loader.n_relative_depth_sample)/g_args.bs)
 
 # Run path
 jobid = os.getenv('PBS_JOBID')
 job_name = os.getenv('PBS_JOBNAME')
-assert(job_name is not None)
+# assert(job_name is not None)
 if g_args.rundir == '':
-    if jobid == '':
+    if jobid == '' or jobid is None:
         jobid = 'debug'
     else:
         jobid = jobid.split('%.')[0]
-    g_args.rundir = os.path.join('/home/yifan/dump/depth_pytorch/results/',g_args.m, job_name)
+    g_args.rundir = os.path.join('/home/yifan/dump/depth_pytorch/results/',g_args.m, str(job_name))
+if os.path.exists(g_args.rundir):
+    shutil.rmtree(g_args.rundir)
 os.mkdir(g_args.rundir)
 torch.save(g_args ,g_args.rundir+'/g_args.pt')
 
@@ -109,7 +113,7 @@ else:
     g_model = Model()
     g_model.period = 1
 # g_model.training()?
-config.learningRate = g_args.lr
+config['learningRate'] = g_args.lr
 
 if get_criterion is None: #Todo
     print("Error: no criterion specified!!!!!!!")
@@ -125,6 +129,7 @@ g_model = g_model.cuda()
 g_params = g_model.parameters() # get parameters
 optimizer = optim.RMSprop(g_params) #optimizer
 
+feval = default_feval
 best_valist_set_error_rate = 1.0
 train_loss = {}
 train_WKDR = {}
@@ -132,6 +137,9 @@ valid_loss = {}
 valid_WKDR = {}
 lfile = open(g_args.rundir+'/training_loss_period'+str(g_model.period)+'.txt', 'w')
 
-for iter in range(0,g_args.it):
+for i in range(0,g_args.it):
     
-    running_loss = 0.0
+    running_loss = feval()
+    if i % g_args.et == 0:
+        print('Evaluatng at iteration {}'.format(i))
+        print('loss = {}'.format(running_loss))

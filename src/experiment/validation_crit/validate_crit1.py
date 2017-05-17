@@ -86,8 +86,8 @@ def evaluate(data_loader, model, criterion, max_n_sample):
 	max_min_i = 1
 	for tau_idx in range(0,_eval_record['n_thresh']):
 		_eval_record['WKDR'][tau_idx, 0] = _eval_record['thresh'][tau_idx]
-		_eval_record['WKDR'][tau_idx, 1] = float(_eval_record['eq_correct_count'][tau_idx]+_eval_record['not_eq_correct_count'][tau_idx])/float(_eval_record['eq_count'] + _eval_record['not_eq_count']
-		_eval_record['WKDR'][tau_idx, 2] = float(_eval_record['eq_correct_count'][tau_idx])/float(_eval_record['eq_count'])
+		_eval_record['WKDR'][tau_idx, 1] = float(_eval_record['eq_correct_count'][tau_idx]+_eval_record['not_eq_correct_count'][tau_idx])/float(_eval_record['eq_count'] + _eval_record['not_eq_count'])
+		_eval_record['WKDR'][tau_idx, 2] = float(_eval_record['eq_correct_count'][tau_idx])/float( _eval_record['eq_count'])
 		_eval_record['WKDR'][tau_idx, 3] = float(_eval_record['not_eq_correct_count'][tau_idx])/float(_eval_record['not_eq_count'])
 
 		if min(_eval_record['WKDR'][tau_idx,2], _eval_record['WKDR'][tau_idx, 3])>max_min:
@@ -99,6 +99,3 @@ def evaluate(data_loader, model, criterion, max_n_sample):
 	print("\tEvaluation Completed. Loss = {}, WKDR = {}".format(total_validation_loss, 1 - max_min))
 
 	return float(total_validation_loss) / float(n_total_point_pair), 1 - max_min
-
-
-if __name__ == '__main__':

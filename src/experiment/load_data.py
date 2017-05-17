@@ -1,6 +1,4 @@
 import sys
-import DataLoader
-
 train_depth_path = None
 valid_depth_path = None
 
@@ -25,5 +23,5 @@ if valid_depth_path is None:
 def TrainDataLoader():
 	return DataLoader(train_depth_path)
 
-def TrainDataLoader():
+def ValidDataLoader():
 	return DataLoader(valid_depth_path)
