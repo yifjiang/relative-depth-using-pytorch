@@ -62,7 +62,7 @@ def save_best_model(model, directory, config, iteration):
     # model.clearState()
     model.config = config
     model.iter = iteration
-    torch.save(model, directory+'/Best_model_period'+str(model.period)+'.pt')
+    torch.save(model, os.path.join(directory,'Best_model_period'+str(model.period)+'.pt'))
 
 
 ## main
@@ -164,3 +164,7 @@ for i in range(0,g_args.it):
         valid_WKDR.append(valid_eval_WKDR)
 
         save_loss_accuracy(train_loss, train_WKDR, valid_loss, valid_WKDR)
+
+        if best_valist_set_error_rate > valid_eval_WKDR:
+            best_valist_set_error_rate = valid_eval_WKDR
+            save_best_model(g_model, g_args.rundir, config, i)
