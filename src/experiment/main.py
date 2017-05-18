@@ -4,6 +4,7 @@ import shutil
 import os
 import sys
 import argparse
+import time
 
 def parseArgs():
     parser = argparse.ArgumentParser()
@@ -12,7 +13,7 @@ def parseArgs():
     parser.add_argument('-it', default=0, type = int, help='Iterations')
     parser.add_argument('-lt', default=1000, type = int, help = 'Loss file saving refresh interval (seconds)')
     parser.add_argument('-mt', default=10000 , type = int, help = 'Model saving interval (iterations)')
-    parser.add_argument('-et', default=3000 , type = int, help = 'Model evaluation interval (iterations)')
+    parser.add_argument('-et', default=10 , type = int, help = 'Model evaluation interval (iterations)')
     parser.add_argument('-lr', default=1e-2 , type = float, help = 'Learning rate')
     parser.add_argument('-t_depth_file', default='', help = 'Training file for relative depth')
     parser.add_argument('-v_depth_file', default='' , help = 'Validation file for relative depth')
@@ -125,22 +126,25 @@ if get_depth_from_model_output is None:
 g_criterion = get_criterion().cuda()
 g_model = g_model.cuda()
 g_params = g_model.parameters() # get parameters
-optimizer = optim.RMSprop(g_params) #optimizer
+optimizer = optim.Adam(g_params) #optimizer
 
 feval = default_feval
 best_valist_set_error_rate = 1.0
-train_loss = {}
-train_WKDR = {}
-valid_loss = {}
-valid_WKDR = {}
+train_loss = []
+train_WKDR = []
+valid_loss = []
+valid_WKDR = []
 lfile = open(g_args.rundir+'/training_loss_period'+str(g_model.period)+'.txt', 'w')
 
 total_loss = 0.0
 for i in range(0,g_args.it):
-    
+    start = time.time()
     running_loss = feval()
     total_loss += running_loss
-    # if i % g_args.et == 0:
-    print('Evaluatng at iteration {}'.format(i))
-    # print('loss = {}'.format(total_loss/(i+1)))
+    end = time.time()
     print(('loss = {}'.format(running_loss)))
+    print('time_used = {}'.format(end-start))
+    if i % g_args.et == 0:
+        print('Evaluatng at iteration {}'.format(i))
+        # train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #todo
+        # print(train_eval_loss, train_eval_WKDR)

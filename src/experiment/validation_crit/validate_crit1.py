@@ -54,17 +54,17 @@ def reset_record(record):
 def evaluate(data_loader, model, criterion, max_n_sample):
 	print('>>>>>>>>>>>>>>>>>>>>>>>>> Valid Crit Threshed: Evaluating on validation set...')
 	print('Evaluate() Switch On!!!')
-	model.evaluate()
+	# model.evaluate()
 	reset_record(_eval_record)
 
 	total_validation_loss = 0
-	n_iters = min(data_loader['n_relative_depth_sample'], max_n_sample)
+	n_iters = min(data_loader.n_relative_depth_sample, max_n_sample)
 	n_total_point_pair = 0
 
 	print("Number of samples we are going to examine: {}".format(n_iters))
 
 	for i in range(0,n_iters):
-		batch_input, batch_target = data_loader.load_indices(torch.Tensor([i]), None) #Whats this None for?
+		batch_input, batch_target = data_loader.load_indices(torch.Tensor([i])) 
 
 		relative_depth_target = batch_target[0]
 
