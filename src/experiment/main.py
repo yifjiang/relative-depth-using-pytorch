@@ -146,5 +146,5 @@ for i in range(0,g_args.it):
     print('time_used = {}'.format(end-start))
     if i % g_args.et == 0:
         print('Evaluatng at iteration {}'.format(i))
-        # train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #todo
+        # train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #TODO
         # print(train_eval_loss, train_eval_WKDR)
