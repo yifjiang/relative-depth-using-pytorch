@@ -2,6 +2,7 @@ import os
 import h5py
 import math
 import random
+import torch
 from common.NYU_params import *
 from DataPointer import DataPointer
 from torchvision import transforms
@@ -44,12 +45,13 @@ class DataLoader(object):
 
 		_n_lines = 0
 		f = open(filename, 'r')
-		for _ in filename:
+		for l in f:
 			_n_lines+=1
 		f.close()
 
 		csv_file_handle = open(filename, 'r')
 		_sample_idx = 0
+		print(_n_lines)
 		while _sample_idx < _n_lines:
 			this_line = csv_file_handle.readline()
 			if this_line != '':
@@ -57,6 +59,7 @@ class DataLoader(object):
 				_sample_idx+=1
 			else:
 				_n_lines-=1
+				print('empty')
 
 		csv_file_handle.close()
 
@@ -80,7 +83,7 @@ class DataLoader(object):
 		else:
 			self.relative_depth_handle = {}
 
-		self.n_relative_depth_sample = len(self.relative_depth_handle)
+		self.n_relative_depth_sample = len(self.relative_depth_handle)-1
 
 	def close():
 		pass
@@ -126,23 +129,23 @@ class DataLoader(object):
 			color[i,:,:,:].copy_(image)
 
 			_hdf5_offset = 5*idx #zero-indexed
-			print(self.relative_depth_handle)
+			# print(self.relative_depth_handle)
 			_this_sample_hdf5 = self.relative_depth_handle['hdf5_handle']['/data'][_hdf5_offset:_hdf5_offset+5,0:n_point]#todo:check this
-			print(_this_sample_hdf5)
-			print(type(_this_sample_hdf5))
-			print(_this_sample_hdf5.size)
+			# print(_this_sample_hdf5)
+			# print(type(_this_sample_hdf5))
+			# print(_this_sample_hdf5.size)
 
-			assert(_this_sample_hdf5.size()[0] == 5)
-			assert(_this_sample_hdf5.size()[1] == n_point)
+			assert(_this_sample_hdf5.shape[0] == 5)
+			assert(_this_sample_hdf5.shape[1] == n_point)
 
-			_batch_target_relative_depth_gpu[i]['y_A'].resize_(n_point).copy_(_this_sample_hdf5[0])
-			_batch_target_relative_depth_gpu[i]['x_A'].resize_(n_point).copy_(_this_sample_hdf5[1])
-			_batch_target_relative_depth_gpu[i]['y_B'].resize_(n_point).copy_(_this_sample_hdf5[2])
-			_batch_target_relative_depth_gpu[i]['x_B'].resize_(n_point).copy_(_this_sample_hdf5[3])
-			_batch_target_relative_depth_gpu[i]['ordianl_relation'].resize_(n_point).copy_(_this_sample_hdf5[4])
+			_batch_target_relative_depth_gpu[i]['y_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[0])).cuda()
+			_batch_target_relative_depth_gpu[i]['x_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[1])).cuda()
+			_batch_target_relative_depth_gpu[i]['y_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[2])).cuda()
+			_batch_target_relative_depth_gpu[i]['x_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[3])).cuda()
+			_batch_target_relative_depth_gpu[i]['ordianl_relation']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[4])).cuda()
 			_batch_target_relative_depth_gpu[i]['n_point'] = n_point
 
-		return color.cuda(), _batch_target_relative_depth_gpu
+		return torch.autograd.Variable(color.cuda()), _batch_target_relative_depth_gpu
 
 	def load_next_batch(self, batch_size):
 		depth_indices = self.data_ptr_relative_depth.load_next_batch(batch_size)

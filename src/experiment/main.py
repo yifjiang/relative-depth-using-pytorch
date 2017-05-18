@@ -5,8 +5,6 @@ import os
 import sys
 import argparse
 
-print('test')
-
 def parseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', default='hourglass', help='model file definition')
@@ -137,9 +135,12 @@ valid_loss = {}
 valid_WKDR = {}
 lfile = open(g_args.rundir+'/training_loss_period'+str(g_model.period)+'.txt', 'w')
 
+total_loss = 0.0
 for i in range(0,g_args.it):
     
     running_loss = feval()
-    if i % g_args.et == 0:
-        print('Evaluatng at iteration {}'.format(i))
-        print('loss = {}'.format(running_loss))
+    total_loss += running_loss
+    # if i % g_args.et == 0:
+    print('Evaluatng at iteration {}'.format(i))
+    # print('loss = {}'.format(total_loss/(i+1)))
+    print(('loss = {}'.format(running_loss)))
