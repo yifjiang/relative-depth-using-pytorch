@@ -1,1 +1,3 @@
 python main.py -lr 0.001 -bs 4 -it 100000 -t_depth_file 750_train_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -v_depth_file 45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv 
+
+python main.py -lr 0.001 -bs 4 -it 100000 -t_depth_file 750_train_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -v_depth_file 45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -rundir ../results -start_from model_period1_10050.pt
