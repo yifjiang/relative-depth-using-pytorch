@@ -128,8 +128,10 @@ class DataLoader(object):
 			# image = Variable(image, require_grad=True)
 			color[i,:,:,:].copy_(image)
 
-			_hdf5_offset = 5*idx #zero-indexed
+			_hdf5_offset = int(5*idx) #zero-indexed
 			# print(self.relative_depth_handle)
+			# print(n_point)
+			# print(_hdf5_offset)
 			_this_sample_hdf5 = self.relative_depth_handle['hdf5_handle']['/data'][_hdf5_offset:_hdf5_offset+5,0:n_point]#todo:check this
 			# print(_this_sample_hdf5)
 			# print(type(_this_sample_hdf5))

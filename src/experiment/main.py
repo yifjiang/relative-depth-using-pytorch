@@ -11,10 +11,10 @@ def parseArgs():
     parser.add_argument('-m', default='hourglass', help='model file definition')
     parser.add_argument('-bs',default=4, type = int, help='batch size')
     parser.add_argument('-it', default=0, type = int, help='Iterations')
-    parser.add_argument('-lt', default=1000, type = int, help = 'Loss file saving refresh interval (seconds)')
-    parser.add_argument('-mt', default=10000 , type = int, help = 'Model saving interval (iterations)')
-    parser.add_argument('-et', default=10 , type = int, help = 'Model evaluation interval (iterations)')
-    parser.add_argument('-lr', default=1e-2 , type = float, help = 'Learning rate')
+    parser.add_argument('-lt', default=10, type = int, help = 'Loss file saving refresh interval (seconds)')
+    parser.add_argument('-mt', default=1000 , type = int, help = 'Model saving interval (iterations)')
+    parser.add_argument('-et', default=100 , type = int, help = 'Model evaluation interval (iterations)')
+    parser.add_argument('-lr', default=1e-3 , type = float, help = 'Learning rate')
     parser.add_argument('-t_depth_file', default='', help = 'Training file for relative depth')
     parser.add_argument('-v_depth_file', default='' , help = 'Validation file for relative depth')
     parser.add_argument('-rundir', default='' , help = 'Running directory')
@@ -42,8 +42,9 @@ def save_loss_accuracy(t_loss, t_WKDR, v_loss, v_WKDR):
     _v_WKDR_tensor = torch.Tensor(v_WKDR)
     _t_WKDR_tensor = torch.Tensor(t_WKDR)#It doesn't matter whether t_WKDR is a Tensor
 
-    _full_filename = g_args.rundir + 'loss_accuracy_record_period' + g_model.period + '.h5'
-    os.remove(_full_filename)
+    _full_filename = os.path.join(g_args.rundir, 'loss_accuracy_record_period' + str(g_model.period) + '.h5')
+    if os.path.isfile(_full_filename):
+        os.remove(_full_filename)
 
     myFile = h5py.File(_full_filename, 'w')
     myFile.create_dataset('t_loss', data=_t_loss_tensor.numpy())
@@ -55,13 +56,13 @@ def save_loss_accuracy(t_loss, t_WKDR, v_loss, v_WKDR):
 def save_model(model, directory, current_iter, config):
     # model.clearState()
     model.config = config
-    torch.save(model, directory+'/model_period'+str(model.period)+'_'+current_iter+'.pt')
+    torch.save(model, directory+'/model_period'+str(model.period)+'_'+str(current_iter)+'.pt')
 
 def save_best_model(model, directory, config, iteration):
     # model.clearState()
     model.config = config
     model.iter = iteration
-    torch.save(model, directory+'/Best_model_period'+str(model.period)+'.pt')
+    torch.save(model, os.path.join(directory,'Best_model_period'+str(model.period)+'.pt'))
 
 
 ## main
@@ -90,9 +91,10 @@ if g_args.rundir == '':
     else:
         jobid = jobid.split('%.')[0]
     g_args.rundir = os.path.join('/home/yifan/dump/depth_pytorch/results/',g_args.m, str(job_name))
-if os.path.exists(g_args.rundir):
-    shutil.rmtree(g_args.rundir)
-os.mkdir(g_args.rundir)
+# if os.path.exists(g_args.rundir):
+#     shutil.rmtree(g_args.rundir)
+if not os.path.exists(g_args.rundir):
+    os.mkdir(g_args.rundir)
 torch.save(g_args ,g_args.rundir+'/g_args.pt')
 
 # Model
@@ -102,8 +104,8 @@ if g_args.m == 'hourglass':
     from models.hourglass import *
 if g_args.start_from != '':
     # import cudnn
-    print(g_args.rundir + g_args.start_from)
-    g_model = torch.load(g_args.rundir + g_args.start_from)
+    print(os.path.join(g_args.rundir, g_args.start_from))
+    g_model = torch.load(os.path.join(g_args.rundir , g_args.start_from))
     if g_model.period is None:
         g_model.period = 1
     g_model.period += 1
@@ -126,7 +128,7 @@ if get_depth_from_model_output is None:
 g_criterion = get_criterion().cuda()
 g_model = g_model.cuda()
 g_params = g_model.parameters() # get parameters
-optimizer = optim.Adam(g_params) #optimizer
+optimizer = optim.RMSprop(g_params) #optimizer
 
 feval = default_feval
 best_valist_set_error_rate = 1.0
@@ -138,13 +140,31 @@ lfile = open(g_args.rundir+'/training_loss_period'+str(g_model.period)+'.txt', '
 
 total_loss = 0.0
 for i in range(0,g_args.it):
-    start = time.time()
+    # start = time.time()
     running_loss = feval()
     total_loss += running_loss
-    end = time.time()
+    # end = time.time()
     print(('loss = {}'.format(running_loss)))
-    print('time_used = {}'.format(end-start))
+    # print('time_used = {}'.format(end-start))
+
+    if i % g_args.mt == 0 and i!=0:
+        print('Saving model at iteration {}...'.format(i))
+        save_model(g_model, g_args.rundir, i, config)
+
     if i % g_args.et == 0:
         print('Evaluatng at iteration {}'.format(i))
-        # train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #TODO
-        # print(train_eval_loss, train_eval_WKDR)
+        train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 20) #TODO
+        valid_eval_loss, valid_eval_WKDR = evaluate(valid_loader, g_model, g_criterion, 20)
+        print("train_eval_loss:",train_eval_loss, "; train_eval_WKDR:" ,train_eval_WKDR)
+        print("valid_eval_loss:", valid_eval_loss, "; valid_eval_WKDR:", valid_eval_WKDR)
+
+        train_loss.append(running_loss)
+        valid_loss.append(valid_eval_loss)
+        train_WKDR.append(train_eval_WKDR)
+        valid_WKDR.append(valid_eval_WKDR)
+
+        save_loss_accuracy(train_loss, train_WKDR, valid_loss, valid_WKDR)
+
+        if best_valist_set_error_rate > valid_eval_WKDR:
+            best_valist_set_error_rate = valid_eval_WKDR
+            save_best_model(g_model, g_args.rundir, config, i)
