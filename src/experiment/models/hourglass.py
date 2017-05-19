@@ -117,6 +117,7 @@ class Model(nn.Module):
 		self.final = nn.Conv2d(64,1,3,padding=1)
 
 	def forward(self,x):
+		print(x.data.size())
 		return self.final(self._4channels(self.blockH(x)))
 
 def get_model():

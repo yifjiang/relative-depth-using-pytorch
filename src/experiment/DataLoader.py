@@ -125,6 +125,7 @@ class DataLoader(object):
 			
 			image = Image.open(img_name)
 			image = loader(image).float()
+			# print(image.size())
 			# image = Variable(image, require_grad=True)
 			color[i,:,:,:].copy_(image)
 
