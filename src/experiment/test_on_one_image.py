@@ -44,6 +44,13 @@ def main():
 		transforms.Scale((orig_width, orig_height))
 		)
 	orig_size_output = batch_output.data[0]
-	orig_size_output = t_back(orig_size_output)
+	orig_size_output = t_back(orig_size_output).convert('RGB')
 
-	orig_size_output.save(cmd_params.output_image)
+	# orig_size_output.save(cmd_params.output_image)
+	new_image = Image.new('RGB', (orig_width*2, orig_height))
+	new_image.paste(orig_img, (0,0))
+	new_image.paste(orig_size_output, (orig_width, 0))
+	new_image.save(cmd_params.output_image)
+
+if __name__ == '__main__':
+	main()
