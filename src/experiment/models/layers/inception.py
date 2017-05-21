@@ -18,7 +18,7 @@ class inception(nn.Module):
 		# Additional layers
 		for i in range(1, len(config)):
 			filt = config[i][0]
-			pad = int((float(filt)-1)/2)
+			pad = int((filt-1)/2)
 			out_a = config[i][1]
 			out_b = config[i][2]
 			conv = nn.Sequential(
@@ -36,10 +36,9 @@ class inception(nn.Module):
 
 	def forward(self, x):
 		ret = []
-		i = 0
 		for conv in (self.convs):
 			ret.append(conv(x))
-			i+=1
+		# print(torch.cat(ret,dim=1))
 		return torch.cat(ret,dim=1)
 
 if __name__ == '__main__':

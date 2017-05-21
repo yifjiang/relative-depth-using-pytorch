@@ -93,7 +93,7 @@ class Channels4(nn.Module):
 			)#BB3BA
 		self.list.append(
 			nn.Sequential(
-				inception(128, [[16], [3,32,16], [7,32,16], [11,32,16]])
+				inception(128, [[16], [3,64,16], [7,64,16], [11,64,16]])
 				)
 			)#A
 
@@ -105,27 +105,53 @@ class Model(nn.Module):
 	def __init__(self):
 		super(Model, self).__init__()
 
-		# first layer
-		self.blockH = nn.Sequential(
+		self.seq = nn.Sequential(
 			nn.Conv2d(3,128,7,padding=3), 
 			nn.BatchNorm2d(128), 
-			nn.ReLU(True)
+			nn.ReLU(True),
+			Channels4(),
+			nn.Conv2d(64,1,3,padding=1)
 			)
 
-		self._4channels = Channels4()
-
-		self.final = nn.Conv2d(64,1,3,padding=1)
-
 	def forward(self,x):
-		print(x.data.size())
-		return self.final(self._4channels(self.blockH(x)))
+		# print(x.data.size())
+		return self.seq(x)
 
 def get_model():
 	return Model().cuda()
+	# return nn.Sequential(
+	# 	nn.Conv2d(3,128,7,padding=3),
+	# 	nn.BatchNorm2d(128), 
+	# 	nn.ReLU(True),
+	# 	nn.AvgPool2d(2),
+	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
+	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
+	# 	nn.AvgPool2d(2),
+	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
+	# 	inception(128, [[64], [3,32,64], [5,32,64], [7,32,64]]),
+	# 	nn.AvgPool2d(2),
+	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
+	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
+	# 	nn.AvgPool2d(2),
+	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
+	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
+	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]), 
+	# 	nn.UpsamplingNearest2d(scale_factor=2),
+	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
+	# 	inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]]),
+	# 	nn.UpsamplingNearest2d(scale_factor=2),
+	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
+	# 	inception(256, [[32], [3,32,32], [5,32,32], [7,32,32]]), 
+	# 	nn.UpsamplingNearest2d(scale_factor=2),
+	# 	inception(128, [[32], [3,64,32], [5,64,32], [7,64,32]]),
+	# 	inception(128, [[16], [3,32,16], [7,32,16], [11,32,16]]),
+	# 	nn.UpsamplingNearest2d(scale_factor=2),
+	# 	nn.Conv2d(64,1,3,padding=1)
+	# 	).cuda()
 
 from .criterion.relative_depth import relative_depth_crit
 def get_criterion():
-	return relative_depth_crit().cuda()
+	return relative_depth_crit()
 
 def f_depth_from_model_output():
 	print(">>>>>>>>>>>>>>>>>>>>>>>>>    depth = model_output")

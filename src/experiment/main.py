@@ -9,7 +9,7 @@ import time
 def parseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', default='hourglass', help='model file definition')
-    parser.add_argument('-bs',default=8, type = int, help='batch size')
+    parser.add_argument('-bs',default=4, type = int, help='batch size')
     parser.add_argument('-it', default=0, type = int, help='Iterations')
     parser.add_argument('-lt', default=10, type = int, help = 'Loss file saving refresh interval (seconds)')
     parser.add_argument('-mt', default=1000 , type = int, help = 'Model saving interval (iterations)')
@@ -30,8 +30,11 @@ def default_feval():
     optimizer.zero_grad()
 
     batch_output = g_model(batch_input)
-    batch_loss = g_criterion(batch_output, batch_target)
+    batch_loss = g_criterion.forward(batch_output, batch_target)
     batch_loss.backward()
+    # dloss_dx = g_criterion.backward(1.0)
+    # print(dloss_dx)
+    # batch_output.backward(dloss_dx.data)
     optimizer.step()
 
     return batch_loss.data[0]
@@ -125,11 +128,11 @@ if get_depth_from_model_output is None:
     print('Error: get_depth_from_model_output is undefined!!!!!!!')
     sys.exit(1)
 
-g_criterion = get_criterion().cuda()
+g_criterion = get_criterion()
 g_model = g_model.cuda()
 # g_params = g_model.parameters() # get parameters
-# optimizer = optim.RMSprop(g_params) #optimizer
-optimizer = optim.Adam(g_model.parameters())
+optimizer = optim.RMSprop(g_model.parameters(), lr=g_args.lr) #optimizer
+# optimizer = optim.Adam(g_model.parameters(), lr=g_args.lr)
 
 feval = default_feval
 best_valist_set_error_rate = 1.0

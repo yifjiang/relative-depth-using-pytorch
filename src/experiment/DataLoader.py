@@ -9,14 +9,14 @@ from torchvision import transforms
 from PIL import Image
 
 
-_batch_target_relative_depth_gpu = {}
-for i in range(0,g_args.bs):#g_args is from main.py
-	_batch_target_relative_depth_gpu[i] = {}
-	_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor().cuda()
-	_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor().cuda()
-	_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor().cuda()
-	_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor().cuda()
-	_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor().cuda()
+# _batch_target_relative_depth_gpu = {}
+# for i in range(0,g_args.bs):#g_args is from main.py
+# 	_batch_target_relative_depth_gpu[i] = {}
+# 	_batch_target_relative_depth_gpu[i]['y_A'] = torch.Tensor().cuda()
+# 	_batch_target_relative_depth_gpu[i]['x_A'] = torch.Tensor().cuda()
+# 	_batch_target_relative_depth_gpu[i]['y_B'] = torch.Tensor().cuda()
+# 	_batch_target_relative_depth_gpu[i]['x_B'] = torch.Tensor().cuda()
+# 	_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.Tensor().cuda()
 
 class DataLoader(object):
 	"""docstring for DataLoader"""
@@ -108,23 +108,27 @@ class DataLoader(object):
 		batch_size = n_depth
 		color = torch.Tensor(batch_size, 3, g_input_height, g_input_width) # now it's a Tensor, remember to make it a Variable
 
+		_batch_target_relative_depth_gpu = {}
 		_batch_target_relative_depth_gpu['n_sample'] = n_depth
 
 
 
-		# loader = transforms.Compose(
-		# 	transforms.ToTensor(),
-		# 	# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
-		# 	)
-		loader = transforms.ToTensor()
+		loader = transforms.Compose([
+			transforms.ToTensor(),
+			transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
+			])
+		# loader = transforms.ToTensor()
 
 		for i in range(0,n_depth):
 			idx = depth_indices[i]
+			_batch_target_relative_depth_gpu[i] = {}
 			img_name = self.relative_depth_handle[idx]['img_filename']
+			# print(img_name)
 			n_point = self.relative_depth_handle[idx]['n_point']
 			
 			image = Image.open(img_name)
 			image = loader(image).float()
+			# print(image)
 			# print(image.size())
 			# image = Variable(image, require_grad=True)
 			color[i,:,:,:].copy_(image)
@@ -144,9 +148,10 @@ class DataLoader(object):
 			_batch_target_relative_depth_gpu[i]['y_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[0])).cuda()
 			_batch_target_relative_depth_gpu[i]['x_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[1])).cuda()
 			_batch_target_relative_depth_gpu[i]['y_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[2])).cuda()
-			_batch_target_relative_depth_gpu[i]['x_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[3])).cuda()
+			_batch_target_relative_depth_gpu[i]['x_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[3])).cuda()			
 			_batch_target_relative_depth_gpu[i]['ordianl_relation']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[4])).cuda()
 			_batch_target_relative_depth_gpu[i]['n_point'] = n_point
+
 
 		return torch.autograd.Variable(color.cuda()), _batch_target_relative_depth_gpu
 

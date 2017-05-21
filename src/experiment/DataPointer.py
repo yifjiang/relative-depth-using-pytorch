@@ -34,7 +34,9 @@ class DataPointer(object):
 			self.current_pos = 0
 			self.idx_perm = torch.randperm(self.n_total)
 
+		# print(indices)
 		return indices
+		# return torch.Tensor([1,1,1,1,1,1])
 
 if __name__ == '__main__':
 	d = DataPointer(10)
