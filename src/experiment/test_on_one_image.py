@@ -54,6 +54,7 @@ def main():
 		transforms.Scale((orig_width, orig_height))
 		])
 	orig_size_output = batch_output.data[0].cpu()
+	# print(orig_size_output[0,0])
 	orig_size_output = orig_size_output - torch.min(orig_size_output)
 	orig_size_output = orig_size_output / torch.max(orig_size_output)
 	orig_size_output = t_back(orig_size_output)#.convert('RGB')

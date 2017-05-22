@@ -9,8 +9,8 @@ from torchvision import transforms
 from torch.autograd import Variable
 
 def _read_data_handle(_filename):
-	f = open(_filename, 'rb')
-	csv_file_handle = csv.reader(f)
+	f = open(_filename, 'r')
+	csv_file_handle = list(csv.reader(f))
 	_n_lines = len(csv_file_handle)
 
 	_data = []
@@ -46,9 +46,14 @@ def _read_data_handle(_filename):
 
 		_data.append(dic)
 
+	# print(_data[0], _data[1])
+
 	return len(_data), _data
 
 def _evaluate_correctness_out(_batch_output, _batch_target, WKDR, WKDR_eq, WKDR_neq):
+
+	# print(_batch_output)
+
 	n_gt_correct = torch.zeros(n_thresh)
 	n_gt = 0
 
@@ -69,7 +74,9 @@ def _evaluate_correctness_out(_batch_output, _batch_target, WKDR, WKDR_eq, WKDR_
 
 		ground_truth = _batch_target['ordianl_relation'][point_idx]
 
-		z_A_z_B = (z_A - z_B).data[0]
+		z_A_z_B = (z_A - z_B)
+
+		# print(z_A_z_B, y_A,x_A, y_B,x_B, ground_truth)
 
 		for thresh_idx in range(0,n_thresh):
 			if z_A_z_B > thresh[thresh_idx]:
@@ -94,27 +101,33 @@ def _evaluate_correctness_out(_batch_output, _batch_target, WKDR, WKDR_eq, WKDR_
 			n_eq+=1
 
 	for i in range(0,n_thresh):
-		WKDR[i] = (1-(n_eq_correct[i]+n_lt_correct[i]+n_gt_correct[i]).float()/(n_eq+n_lt+n_gt))
-		WKDR_eq[i] = (1 - n_eq_correct[i].float()/n_eq)
-		WKDR_neq[i] = (1 - (n_lt_correct[i] + n_gt_correct[i]).float()/(n_lt+n_gt))
+		WKDR[i] = (1-(n_eq_correct[i]+n_lt_correct[i]+n_gt_correct[i])/(n_eq+n_lt+n_gt))
+		WKDR_eq[i] = (1 - n_eq_correct[i]/n_eq)
+		WKDR_neq[i] = (1 - (n_lt_correct[i] + n_gt_correct[i])/(n_lt+n_gt))
 
 def inpaint_pad_output_our(output, img_original_width, img_original_height):
 	crop = cmd_params.crop
 	resize_height = img_original_height - 2*crop
 	resize_width = img_original_width -2*crop
+	output_min = torch.min(output)
+	output_max = torch.max(output)-output_min
+	output-=output_min
+	output/=output_max
 	scale = transforms.Compose([
 		transforms.ToPILImage(),
 		transforms.Scale((resize_width, resize_height)),
 		transforms.ToTensor()
 		]) 
 	resize_output = scale(torch.Tensor(output[0]))
+	resize_output*=output_max
+	resize_output+=output_min
 	padded_output = torch.Tensor(1,img_original_height, img_original_width)
 
 	padded_output[0,crop:img_original_height-crop, crop:img_original_width-crop].copy_(resize_output)
 
 	for i in range(0,crop):
-		padded_output[0, crop:img_original_height-crop, i].copy_(resize_output[:,0])
-		padded_output[0, crop:img_original_height-crop, img_original_width-1-i].copy_(resize_output[:,resize_width-1])
+		padded_output[0, crop:img_original_height-crop, i].copy_(resize_output[0, :,0])
+		padded_output[0, crop:img_original_height-crop, img_original_width-1-i].copy_(resize_output[0,:,resize_width-1])
 
 	for i in range(0,crop):
 		padded_output[0, i, :].copy_(padded_output[0,crop,:])
@@ -126,11 +139,11 @@ def inpaint_pad_output_our(output, img_original_width, img_original_height):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-num_iter', default=1, type = int, help ='number of training iteration')
-parser.add_argument('-prev_model_file', required=True, type=string, help='Absolute/relative path to the previous model file. Resume training from this file')
+parser.add_argument('-prev_model_file', required=True, help='Absolute/relative path to the previous model file. Resume training from this file')
 parser.add_argument('-vis', default = False, type = bool, help='visualize output')
 parser.add_argument('-output_folder', default = './output_imgs', help = 'image output folder')
 parser.add_argument('-mode', default='validate', help = 'mode: test or validate')
-parser.add_argument('-valid_set', default='45_NYU_validate_imgs_points_resize_240_320.csv', help = 'validation file name')
+parser.add_argument('-valid_set', default='45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv', help = 'validation file name')
 parser.add_argument('-test_set', default = '654_NYU_MITpaper_test_imgs_orig_size_points.csv', help = 'test file name')
 parser.add_argument('-crop', default = 10, type = int, help = 'cropping size')
 parser.add_argument('-thresh', default = -1, help = 'threshold for determining WKDR. Obtained from validations set.')
@@ -143,16 +156,20 @@ elif cmd_params.mode  == 'validate':
 	csv_file_name = os.path.join('../../data/',cmd_params.valid_set)
 preload_pt_filename = csv_file_name.replace('.csv','.pt')
 
-f = open(preload_pt_filename, 'r')
-if f is None:
-	print('loading csv file...')
-	n_sample, data_handle = _read_data_handle(csv_file_name)
-	torch.save(data_handle, preload_pt_filename)
-else:
+if not os.path.exists(cmd_params.output_folder):
+	os.mkdir(cmd_params.output_folder)
+
+try:
+	f = open(preload_pt_filename, 'r')
 	f.close()
 	print('loading preload pt file...')
 	data_handle = torch.load(preload_pt_filename)
 	n_sample = len(data_handle)
+except Exception as e:
+	print('loading csv file...')
+	n_sample, data_handle = _read_data_handle(csv_file_name)
+	torch.save(data_handle, preload_pt_filename)
+
 
 print('Hyper params: ')
 print('csv_file_name:', csv_file_name)
@@ -184,11 +201,12 @@ fsqrrel = torch.zeros(n_iter)
 
 t = transforms.Compose([
 	transforms.Scale((network_input_width, network_input_height)),
-	transforms.toTensor()
+	transforms.ToTensor()
 	])
 
 for i in range(0, n_iter):
-	img = Image.open(data_handle[i].img_filename).convert('RGB')
+	print(i)
+	img = Image.open(data_handle[i]['img_filename']).convert('RGB')
 	img_original_width, img_original_height = img.size
 
 	crop = transforms.CenterCrop((img_original_height- 2*cmd_params.crop, img_original_width - 2*cmd_params.crop ))
@@ -203,9 +221,11 @@ for i in range(0, n_iter):
 
 	batch_output = model(Variable(_batch_input_cpu).cuda())
 
-	temp = batch_output
+	# temp = batch_output
 
-	batch_output = batch_output.data #now a tensor
+	batch_output = batch_output.cpu().data #now a tensor
+	batch_output_min = torch.min(batch_output)
+	batch_output_max = torch.max(batch_output)-batch_output_min
 
 	original_size_output = torch.Tensor(1,1,img_original_height, img_original_width)
 
@@ -221,9 +241,28 @@ for i in range(0, n_iter):
 			transforms.ToPILImage(),
 			transforms.Scale((img_original_width, img_original_height)),
 			transforms.ToTensor()
-			])
-		original_size_output[0].copy_(scale(batch_output[0]))
+			])#temporal solution
+		batch_output -= batch_output_min
+		batch_output /= batch_output_max
+		temp = scale(batch_output[0])
+		temp *= batch_output_max
+		temp += batch_output_min
+		original_size_output[0].copy_(temp)
 		_evaluate_correctness_out(original_size_output, _single_data[0], WKDR[i], WKDR_eq[i], WKDR_neq[i])
+
+	if cmd_params.vis:
+		orig_size_output = original_size_output[0]
+		orig_size_output = orig_size_output - torch.min(orig_size_output)
+		orig_size_output = orig_size_output / torch.max(orig_size_output)
+		t_back = transforms.ToPILImage()
+		orig_size_output = t_back(orig_size_output)
+
+		new_image = Image.new('RGB', (img_original_width*2, img_original_height))
+		new_image.paste(img, (0,0))
+		new_image.paste(orig_size_output, (img_original_width, 0))
+
+		new_image.save(os.path.join(cmd_params.output_folder, str(i)+'.png'))
+
 
 WKDR = torch.mean(WKDR, 0)
 WKDR_eq = torch.mean(WKDR_eq, 0)
@@ -247,7 +286,7 @@ if cmd_params.thresh < 0:
 	print("====================================================================")
 	if min_max_i > 0:
 		if min_max_i < n_thresh-1:
-			print(overall_summary[min_max_i-1, min_max_i+1, :])
+			print(overall_summary[min_max_i-1:min_max_i+2, :])
 else:
 	print('Result:\n')
 	for i in range(0,n_thresh):
