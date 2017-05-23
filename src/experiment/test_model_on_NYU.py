@@ -135,6 +135,30 @@ def inpaint_pad_output_our(output, img_original_width, img_original_height):
 
 	return padded_output
 
+def metric_error(gtz, z):
+	fmse = torch.mean(torch.pow(gtz-z,2))
+	fmselog = torch.mean(torch.pow(torch.log(gtz)-torch.log(z),2))
+	flsi = torch.mean(torch.pow(torch.log(z)-torch.log(gtz) + torch.mean(torch.log(gtz)-torch.log(z)), 2))
+	fabsrel = torch.mean(torch.abs(z-gtz)/gtz)
+	fsqrrel = torch.mean(torch.pow(z-gtz, 2)/gtz)
+
+	return fmse, fmselog, flsi, fabsrel, fsqrrel
+
+def normalize_output_depth_with_NYU_mean_std(input):
+	std_of_NYU_training = 0.6148231626
+	mean_of_NYU_training = 2.8424594402
+
+	transformed_z = input.clone()
+	transformed_z -= torch.mean(transformed_z)
+	transformed_z /= torch.std(transformed_z)
+	transformed_z *= std_of_NYU_training
+	transformed_z += mean_of_NYU_training
+
+	if torch.sum(transformed_z<0) > 0:
+		transformed_z = (transformed_z<0)*(torch.min(transformed_z>0)+0.00001)+transformed_z*(1- transformed_z<0)
+
+	return transformed_z
+
 ### main entry ###
 
 parser = argparse.ArgumentParser()
@@ -234,7 +258,18 @@ for i in range(0, n_iter):
 
 		_evaluate_correctness_out(original_size_output, _single_data[0], WKDR[i], WKDR_eq[i], WKDR_neq[i])
 
-		# gtz_h5_ #todo
+		gtz_h5_handle = h5py.File(os.path.join(os.path.dirname(data_handle[i]['img_filename']),str(i)+'_depth.h5'), 'r') #todo
+		gtz = gtz_h5_handle['/data']
+		gtz_h5_handle.close()
+		assert(gtz.size()[0] == 480)
+		assert(gtz.size()[1] == 640)
+
+		transformed_z_orig_size = normalize_output_depth_with_NYU_mean_std(original_size_output[0,0,:,:])
+
+		metric_test_crop = 16
+		transformed_z_orig_size = transformed_z_orig_size[metric_test_crop:(img_original_height- metric_test_crop), metric_test_crop:(img_original_width- metric_test_crop)]
+
+		fmse[i], fmselog[i], flsi[i], fabsrel[i], fsqrrel[i] = metric_error(gtz,transformed_z_orig_size)
 		
 	elif cmd_params.mode == 'validate':
 		scale = transforms.Compose([
@@ -293,3 +328,11 @@ else:
 		if overall_summary[i,0] == cmd_params.thresh:
 			print(' Thresh\tWKDR\tWKDR_eq\tWKDR_neq')
 			print(overall_summary[i])
+
+if cmd_params.mode == 'test':
+	print("====================================================================")
+	print("rmse:\t{}".format(torch.sqrt(torch.mean(fmse))))
+	print("rmselog:{}".format(torch.sqrt(torch.mean(fmselog))))
+	print("lsi:\t{}".format(torch.sqrt(torch.mean(flsi))))
+	print("absrel:\t{}".format(torch.mean(fabsrel)))
+	print("sqrrel:\t{}".format(torch.mean(fsqrrel)))
