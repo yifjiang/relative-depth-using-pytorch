@@ -1,4 +1,5 @@
 from PIL import Image
+from math import sqrt
 import torch
 import os
 import csv
@@ -136,6 +137,8 @@ def inpaint_pad_output_our(output, img_original_width, img_original_height):
 	return padded_output
 
 def metric_error(gtz, z):
+	gtz = torch.Tensor(gtz).cuda()
+	z = z.cuda()
 	fmse = torch.mean(torch.pow(gtz-z,2))
 	fmselog = torch.mean(torch.pow(torch.log(gtz)-torch.log(z),2))
 	flsi = torch.mean(torch.pow(torch.log(z)-torch.log(gtz) + torch.mean(torch.log(gtz)-torch.log(z)), 2))
@@ -169,7 +172,7 @@ parser.add_argument('-output_folder', default = './output_imgs', help = 'image o
 parser.add_argument('-mode', default='validate', help = 'mode: test or validate')
 parser.add_argument('-valid_set', default='45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv', help = 'validation file name')
 parser.add_argument('-test_set', default = '654_NYU_MITpaper_test_imgs_orig_size_points.csv', help = 'test file name')
-parser.add_argument('-crop', default = 10, type = int, help = 'cropping size')
+parser.add_argument('-crop', default = 16, type = int, help = 'cropping size')
 parser.add_argument('-thresh', default = -1, help = 'threshold for determining WKDR. Obtained from validations set.')
 
 cmd_params = parser.parse_args()
@@ -258,18 +261,22 @@ for i in range(0, n_iter):
 
 		_evaluate_correctness_out(original_size_output, _single_data[0], WKDR[i], WKDR_eq[i], WKDR_neq[i])
 
-		gtz_h5_handle = h5py.File(os.path.join(os.path.dirname(data_handle[i]['img_filename']),str(i)+'_depth.h5'), 'r') #todo
-		gtz = gtz_h5_handle['/data']
-		gtz_h5_handle.close()
-		assert(gtz.size()[0] == 480)
-		assert(gtz.size()[1] == 640)
+		gtz_h5_handle = h5py.File(os.path.join(os.path.dirname(data_handle[i]['img_filename']),str(i+1)+'_depth.h5'), 'r') #todo
+		gtz = gtz_h5_handle['/depth']
+		# print(gtz)
+		assert(gtz.shape[0] == 480)
+		assert(gtz.shape[1] == 640)
 
 		transformed_z_orig_size = normalize_output_depth_with_NYU_mean_std(original_size_output[0,0,:,:])
 
 		metric_test_crop = 16
 		transformed_z_orig_size = transformed_z_orig_size[metric_test_crop:(img_original_height- metric_test_crop), metric_test_crop:(img_original_width- metric_test_crop)]
+		gtz = gtz[metric_test_crop:(img_original_height- metric_test_crop), metric_test_crop:(img_original_width- metric_test_crop)]
+		# print(gtz)
 
 		fmse[i], fmselog[i], flsi[i], fabsrel[i], fsqrrel[i] = metric_error(gtz,transformed_z_orig_size)
+
+		gtz_h5_handle.close()
 		
 	elif cmd_params.mode == 'validate':
 		scale = transforms.Compose([
@@ -331,8 +338,8 @@ else:
 
 if cmd_params.mode == 'test':
 	print("====================================================================")
-	print("rmse:\t{}".format(torch.sqrt(torch.mean(fmse))))
-	print("rmselog:{}".format(torch.sqrt(torch.mean(fmselog))))
-	print("lsi:\t{}".format(torch.sqrt(torch.mean(flsi))))
+	print("rmse:\t{}".format(sqrt(torch.mean(fmse))))
+	print("rmselog:{}".format(sqrt(torch.mean(fmselog))))
+	print("lsi:\t{}".format(sqrt(torch.mean(flsi))))
 	print("absrel:\t{}".format(torch.mean(fabsrel)))
 	print("sqrrel:\t{}".format(torch.mean(fsqrrel)))
