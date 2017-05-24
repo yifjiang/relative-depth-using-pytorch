@@ -115,7 +115,7 @@ class DataLoader(object):
 
 		loader = transforms.Compose([
 			transforms.ToTensor(),
-			transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
+			# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) # may not need this
 			])
 		# loader = transforms.ToTensor()
 

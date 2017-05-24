@@ -12,7 +12,7 @@ def parseArgs():
     parser.add_argument('-bs',default=4, type = int, help='batch size')
     parser.add_argument('-it', default=0, type = int, help='Iterations')
     parser.add_argument('-lt', default=10, type = int, help = 'Loss file saving refresh interval (seconds)')
-    parser.add_argument('-mt', default=1000 , type = int, help = 'Model saving interval (iterations)')
+    parser.add_argument('-mt', default=3000 , type = int, help = 'Model saving interval (iterations)')
     parser.add_argument('-et', default=1000 , type = int, help = 'Model evaluation interval (iterations)')
     parser.add_argument('-lr', default=1e-3 , type = float, help = 'Learning rate')
     parser.add_argument('-t_depth_file', default='', help = 'Training file for relative depth')
@@ -21,6 +21,7 @@ def parseArgs():
     parser.add_argument('-ep', default=10 , type = int , help = 'Epochs')
     parser.add_argument('-start_from', default='' , help = 'Start from previous model')
     parser.add_argument('-diw', default=False , type = bool , help = 'Is training on DIW dataset')
+    parser.add_argument('-optim', default='RMSprop', help = 'choose the optimizer')
     g_args = parser.parse_args()
     return g_args
 
@@ -131,8 +132,12 @@ if get_depth_from_model_output is None:
 g_criterion = get_criterion()
 g_model = g_model.cuda()
 # g_params = g_model.parameters() # get parameters
-optimizer = optim.RMSprop(g_model.parameters(), lr=g_args.lr) #optimizer
-# optimizer = optim.Adam(g_model.parameters(), lr=g_args.lr)
+if g_args.optim == 'RMSprop':
+    optimizer = optim.RMSprop(g_model.parameters(), lr=g_args.lr) #optimizer
+    print('Using RMSprop')
+elif g_args.optim == 'Adam':
+    optimizer = optim.Adam(g_model.parameters(), lr=g_args.lr)
+    print('Using Adam')
 
 feval = default_feval
 best_valist_set_error_rate = 1.0
@@ -157,8 +162,8 @@ for i in range(0,g_args.it):
 
     if i % g_args.et == 0 and i != 0:
         print('Evaluatng at iteration {}'.format(i))
-        train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 20) #TODO
-        valid_eval_loss, valid_eval_WKDR = evaluate(valid_loader, g_model, g_criterion, 20)
+        train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #TODO
+        valid_eval_loss, valid_eval_WKDR = evaluate(valid_loader, g_model, g_criterion, 100)
         print("train_eval_loss:",train_eval_loss, "; train_eval_WKDR:" ,train_eval_WKDR)
         print("valid_eval_loss:", valid_eval_loss, "; valid_eval_WKDR:", valid_eval_WKDR)
 

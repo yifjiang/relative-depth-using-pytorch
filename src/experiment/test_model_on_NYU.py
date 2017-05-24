@@ -228,7 +228,8 @@ fsqrrel = torch.zeros(n_iter)
 
 t = transforms.Compose([
 	transforms.Scale((network_input_width, network_input_height)),
-	transforms.ToTensor()
+	transforms.ToTensor(),
+	# transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))#may not need this
 	])
 
 for i in range(0, n_iter):
@@ -313,6 +314,8 @@ overall_summary = torch.Tensor(n_thresh, 4)
 
 min_max = 100
 min_max_i = 0
+min_WKDR = 100
+min_WKDR_i = 0
 
 for i in range(0,n_thresh):
 	overall_summary[i,0] = thresh[i]
@@ -322,6 +325,9 @@ for i in range(0,n_thresh):
 	if max(WKDR_eq[0,i], WKDR_neq[0,i])<min_max:
 		min_max = max(WKDR_eq[0,i], WKDR_neq[0,i])
 		min_max_i = i
+	if WKDR[0,i] < min_WKDR:
+		min_WKDR = WKDR[0,i]
+		min_WKDR_i = i
 
 if cmd_params.thresh < 0:
 	print(overall_summary)
@@ -329,6 +335,7 @@ if cmd_params.thresh < 0:
 	if min_max_i > 0:
 		if min_max_i < n_thresh-1:
 			print(overall_summary[min_max_i-1:min_max_i+2, :])
+	print(overall_summary[min_WKDR_i])
 else:
 	print('Result:\n')
 	for i in range(0,n_thresh):

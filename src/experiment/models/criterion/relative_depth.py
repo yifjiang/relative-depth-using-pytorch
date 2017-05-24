@@ -14,7 +14,7 @@ class relative_depth_crit(nn.Module):
 		# return -F.logsigmoid(-ground_truth*(z_A-z_B))*mask + (1-mask)*(z_A-z_B)*(z_A-z_B)
 		# print((z_A-z_B)*(z_A-z_B))
 		# print ((mask*torch.log(1+torch.exp(-ground_truth*(z_A-z_B)))+(1-mask)*(z_A-z_B)*(z_A-z_B)).size())
-		return mask*torch.log(1+torch.exp(-ground_truth*(z_A-z_B)))+(1-mask)*torch.max(Variable(torch.zeros(z_A.size())).cuda(), (z_A-z_B)*(z_A-z_B))
+		return mask*torch.log(1+torch.exp(-ground_truth*(z_A-z_B)))+(1-mask)*(z_A-z_B)*(z_A-z_B)
 
 	def __init__(self):
 		super(relative_depth_crit, self).__init__()
