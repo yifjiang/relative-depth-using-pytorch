@@ -95,7 +95,7 @@ class DataLoader(object):
 		return n_depth, batch_size - n_depth
 
 	def mixed_sample_strategy2(self, batch_size):
-		n_depth = batch_size/2
+		n_depth = floor(batch_size/2)
 		return n_depth, batch_size - n_depth #careful about the index
 
 
