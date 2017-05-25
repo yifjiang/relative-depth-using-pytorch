@@ -31,10 +31,10 @@ def _read_data_handle(_filename):
 		_line_idx+=1
 
 		for point_idx in range(0,dic['n_point']):
-			dic['y_A'].append(int(csv_file_handle[_line_idx][0]))
-			dic['x_A'].append(int(csv_file_handle[_line_idx][1]))
-			dic['y_B'].append(int(csv_file_handle[_line_idx][2]))
-			dic['x_B'].append(int(csv_file_handle[_line_idx][3]))
+			dic['y_A'].append(int(csv_file_handle[_line_idx][0])-1)
+			dic['x_A'].append(int(csv_file_handle[_line_idx][1])-1)
+			dic['y_B'].append(int(csv_file_handle[_line_idx][2])-1)
+			dic['x_B'].append(int(csv_file_handle[_line_idx][3])-1)
 
 			if csv_file_handle[_line_idx][4] == '>':
 				dic['ordianl_relation'].append(1)
