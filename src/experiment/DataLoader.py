@@ -145,10 +145,10 @@ class DataLoader(object):
 			assert(_this_sample_hdf5.shape[0] == 5)
 			assert(_this_sample_hdf5.shape[1] == n_point)
 
-			_batch_target_relative_depth_gpu[i]['y_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[0])).cuda()
-			_batch_target_relative_depth_gpu[i]['x_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[1])).cuda()
-			_batch_target_relative_depth_gpu[i]['y_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[2])).cuda()
-			_batch_target_relative_depth_gpu[i]['x_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[3])).cuda()			
+			_batch_target_relative_depth_gpu[i]['y_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[0]-1)).cuda()
+			_batch_target_relative_depth_gpu[i]['x_A']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[1]-1)).cuda()
+			_batch_target_relative_depth_gpu[i]['y_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[2]-1)).cuda()
+			_batch_target_relative_depth_gpu[i]['x_B']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[3]-1)).cuda()			
 			_batch_target_relative_depth_gpu[i]['ordianl_relation']= torch.autograd.Variable(torch.from_numpy(_this_sample_hdf5[4])).cuda()
 			_batch_target_relative_depth_gpu[i]['n_point'] = n_point
 
