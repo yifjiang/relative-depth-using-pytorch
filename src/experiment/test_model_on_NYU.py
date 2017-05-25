@@ -52,6 +52,7 @@ def _read_data_handle(_filename):
 	return len(_data), _data
 
 def _evaluate_correctness_out(_batch_output, _batch_target, WKDR, WKDR_eq, WKDR_neq):
+	# print(_batch_output.size())
 
 	# print(_batch_output)
 
@@ -127,11 +128,15 @@ def inpaint_pad_output_our(output, img_original_width, img_original_height):
 	padded_output[0,crop:img_original_height-crop, crop:img_original_width-crop].copy_(resize_output)
 
 	for i in range(0,crop):
+		# print(resize_output[0, :,0])
 		padded_output[0, crop:img_original_height-crop, i].copy_(resize_output[0, :,0])
+		# print(resize_output[0,:,resize_width-1])
 		padded_output[0, crop:img_original_height-crop, img_original_width-1-i].copy_(resize_output[0,:,resize_width-1])
 
 	for i in range(0,crop):
+		# print(padded_output[0,crop,:])
 		padded_output[0, i, :].copy_(padded_output[0,crop,:])
+		# print(padded_output[0, resize_height+crop-1 ,:])
 		padded_output[0, img_original_height-1-i, :].copy_(padded_output[0, resize_height+crop-1 ,:])
 
 	return padded_output

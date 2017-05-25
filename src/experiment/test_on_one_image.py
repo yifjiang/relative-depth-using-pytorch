@@ -32,7 +32,7 @@ def main():
 	loader = transforms.Compose([
 		transforms.Scale((_network_input_width, _network_input_height)),
 		transforms.ToTensor(),
-		transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
+		# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
 		])
 	img = loader(orig_img).float()
 	# print(img)
