@@ -3,10 +3,12 @@ import h5py
 import math
 import random
 import torch
+import csv
 from common.NYU_params import *
 from DataPointer import DataPointer
 from torchvision import transforms
 from PIL import Image
+from math import floor
 
 class DataLoader(object):
 	"""docstring for DataLoader"""
@@ -26,14 +28,16 @@ class DataLoader(object):
 		_handle = {}
 
 		_sample_idx = 0
-		for _line_idx in range(0,_n_lines):
+		_line_idx = 0
+		while _line_idx < _n_lines:
 			_handle[_sample_idx] = {}
 			_handle[_sample_idx]['img_filename'] = csv_file_handle[_line_idx][0]
-			_handle[_sample_idx]['img_filename']['n_point'] = 1
+			_handle[_sample_idx]['n_point'] = 1
 			_handle[_sample_idx]['img_filename_line_idx'] = _line_idx
-			_sample_idx += 1
 
-			_line_idx += _handle[_sample_idx]['img_filename']['n_point']
+			_line_idx += _handle[_sample_idx]['n_point']
+			_line_idx += 1
+			_sample_idx += 1
 
 		_handle['csv_file_handle'] = csv_file_handle
 
@@ -45,10 +49,10 @@ class DataLoader(object):
 		orig_img_width = float(csv_file_handle[_line_idx][5])
 		orig_img_height = float(csv_file_handle[_line_idx][6])
 
-		y_A_float_orig = float(csv_file_handle[_line_idx][0]-1)/orig_img_height
-		x_A_float_orig = float(csv_file_handle[_line_idx][1]-1)/orig_img_width
-		y_B_float_orig = float(csv_file_handle[_line_idx][2]-1)/orig_img_height
-		x_B_float_orig = float(csv_file_handle[_line_idx][3]-1)/orig_img_width
+		y_A_float_orig = (float(csv_file_handle[_line_idx][0])-1)/orig_img_height
+		x_A_float_orig = (float(csv_file_handle[_line_idx][1])-1)/orig_img_width
+		y_B_float_orig = (float(csv_file_handle[_line_idx][2])-1)/orig_img_height
+		x_B_float_orig = (float(csv_file_handle[_line_idx][3])-1)/orig_img_width
 
 		y_A = min(g_input_height-1, max(0, floor(y_A_float_orig * g_input_height )))
 		x_A = min(g_input_width -1, max(0, floor(x_A_float_orig * g_input_width  )))
@@ -65,7 +69,7 @@ class DataLoader(object):
 			elif x_A_float_orig < x_B_float_orig:
 				x_B-=1
 
-		ordi = csv_file_handle[4][0]
+		ordi = csv_file_handle[_line_idx][4][0]
 
 		if ordi == '>':
 			ordi = 1
@@ -75,14 +79,15 @@ class DataLoader(object):
 			print('Error in _read_one_sample()! The ordinal_relationship should never be = !!!!')
 			assert(False)
 		else:
+			print(ordi)
 			print('Error in _read_one_sample()! The ordinal_relationship does not read correctly!!!!')
 			assert(False)
 
-		print("Original:{}, {}, {}, {}".format(int(csv_file_handle[_line_idx][0]-1), int(csv_file_handle[_line_idx][1]-1), int(csv_file_handle[_line_idx][2]-1), int(csv_file_handle[_line_idx][3]-1)))
-		print("Size    :{}, {}".format(orig_img_width, orig_img_height))
-		print("Float  :{}, {}, {}, {}".format(y_A_float_orig, x_A_float_orig, y_B_float_orig, x_B_float_orig))
-		print("Scaled: {}, {}, {}, {}".format(y_A, x_A, y_B, x_B, ordi))
-		print("relationship: {}".format(ordi))
+		# print("Original:{}, {}, {}, {}".format(int(csv_file_handle[_line_idx][0])-1, int(csv_file_handle[_line_idx][1])-1, int(csv_file_handle[_line_idx][2])-1, int(csv_file_handle[_line_idx][3])-1))
+		# print("Size    : height:{}, width{}".format(orig_img_height, orig_img_width))
+		# print("Float  :{}, {}, {}, {}".format(y_A_float_orig, x_A_float_orig, y_B_float_orig, x_B_float_orig))
+		# print("Scaled: {}, {}, {}, {}".format(y_A, x_A, y_B, x_B, ordi))
+		# print("relationship: {}".format(ordi))
 
 		return y_A, x_A, y_B, x_B, ordi
 
@@ -148,7 +153,7 @@ class DataLoader(object):
 			_batch_target_relative_depth_gpu[i]['x_A'] = torch.autograd.Variable(torch.Tensor([x_A])).cuda()
 			_batch_target_relative_depth_gpu[i]['y_B'] = torch.autograd.Variable(torch.Tensor([y_B])).cuda()
 			_batch_target_relative_depth_gpu[i]['x_B'] = torch.autograd.Variable(torch.Tensor([x_B])).cuda()
-			_batch_target_relative_depth_gpu[i]['ordinal_relation'] = torch.autograd.Variable(torch.Tensor([ordi])).cuda()
+			_batch_target_relative_depth_gpu[i]['ordianl_relation'] = torch.autograd.Variable(torch.Tensor([ordi])).cuda()
 			_batch_target_relative_depth_gpu[i]['n_point'] = n_point
 
 		return torch.autograd.Variable(color.cuda()), _batch_target_relative_depth_gpu
