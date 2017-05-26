@@ -11,17 +11,17 @@ def _is_correct(z_A, z_B, ground_truth):
 	return _classify_res == ground_truth
 
 def _count_correct(output, target):
-	y_A = target['y_A'][0]
-	x_A = target['x_A'][1]
-	y_B = target['y_B'][2]
-	x_B = target['x_B'][3]
+	y_A = target['y_A'].cpu().data.int().numpy()[0]
+	x_A = target['x_A'].cpu().data.int().numpy()[0]
+	y_B = target['y_B'].cpu().data.int().numpy()[0]
+	x_B = target['x_B'].cpu().data.int().numpy()[0]
 
-	z_A = output[0,0,y_A,x_A]
-	z_B = ouptut[0,0,y_B,x_B]
+	z_A = output[0,0,y_A,x_A].data[0]
+	z_B = output[0,0,y_B,x_B].data[0]
 
 	assert(x_A!=x_B or y_A!=y_B)
 
-	ground_truth = target['ordianl_relation'][0]
+	ground_truth = target['ordianl_relation'].data[0]
 
 	if _is_correct(z_A, z_B, ground_truth):
 		return 1
@@ -39,18 +39,18 @@ def evaluate(data_loader, model, criterion, max_n_sample):
 
 	print("Number of samples we are going to examine: {}".format(n_iters))
 
-	for iter in range(0,n_iters):
+	for i in range(0,n_iters):
 		batch_input, batch_target = data_loader.load_indices(torch.Tensor([i]))
-		relative_depth_target == batch_target[0]
+		relative_depth_target = batch_target[0]
 
 		batch_output = model(batch_input)
 		batch_loss = criterion(batch_output, batch_target)
 
-		output_depth = get_depth_from_model_output(batch_output)
+		output_depth = batch_output
 
 		_n_point_correct = _count_correct(output_depth, relative_depth_target)
 
-		total_validation_loss+=batch_loss
+		total_validation_loss+=batch_loss.cpu().data[0]
 		correct_count+=_n_point_correct
 		n_total_validate_samples+=1
 
