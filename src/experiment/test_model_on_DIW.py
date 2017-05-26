@@ -51,10 +51,10 @@ def _read_one_sample(_sample_idx, handle):
 	_line_idx = handle[_sample_idx]['img_filename_line_idx']+1
 
 	for point_idx in range(0,handle[_sample_idx]['n_point']):
-		_data['y_A'].append(int(handle['csv_file_handle'][_line_idx][0]))
-		_data['x_A'].append(int(handle['csv_file_handle'][_line_idx][1]))
-		_data['y_B'].append(int(handle['csv_file_handle'][_line_idx][2]))
-		_data['x_B'].append(int(handle['csv_file_handle'][_line_idx][3]))
+		_data['y_A'].append(int(handle['csv_file_handle'][_line_idx][0])-1)
+		_data['x_A'].append(int(handle['csv_file_handle'][_line_idx][1])-1)
+		_data['y_B'].append(int(handle['csv_file_handle'][_line_idx][2])-1)
+		_data['x_B'].append(int(handle['csv_file_handle'][_line_idx][3])-1)
 
 		if _data['y_A'][point_idx] == _data['y_B'][point_idx] and _data['x_A'][point_idx] == _data['x_B'][point_idx]:
 			print('The coordinates shouldn not be equal!!!!')
@@ -104,7 +104,8 @@ def _evaluate_correctness(_batch_output, _batch_target, record):
 		elif ground_truth < 0:
 			record['n_lt']+=1
 		elif ground_truth == 0:
-			assert(False, 'The input should not contain equal terms!')
+			print('The input should not contain equal terms!')
+			assert(False)
 
 def print_result(record):
 	print('Less_than correct ratio = {}, n_lt_correct = {}, n_lt = {}'.format(record['n_lt_correct']/record['n_lt'], record['n_lt_correct'], record['n_lt']))

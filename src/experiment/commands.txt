@@ -7,3 +7,5 @@ python test_on_one_image.py -prev_model_file ../results/Best_model_period3.pt -i
 python test_model_on_NYU.py -num_iter 1000 -prev_model_file ../results/Best_model_period1.pt -mode test -crop 8
 
 python test_model_on_DIW.py -num_iter 100 -prev_model_file ../results/Best_model_period1.pt -vis True
+
+python main.py -diw True -lr 0.0001 -bs 4 -m hourglass -it 200000 -t_depth_file DIW_train.csv -v_depth_file DIW_val.csv -rundir ../results
