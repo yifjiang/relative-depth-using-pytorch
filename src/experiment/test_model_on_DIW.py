@@ -50,7 +50,7 @@ def _read_one_sample(_sample_idx, handle):
 
 	_line_idx = handle[_sample_idx]['img_filename_line_idx']+1
 
-	for point_idx in range(0,handle[_sample_idx][n_point]):
+	for point_idx in range(0,handle[_sample_idx]['n_point']):
 		_data['y_A'].append(int(handle['csv_file_handle'][_line_idx][0]))
 		_data['x_A'].append(int(handle['csv_file_handle'][_line_idx][1]))
 		_data['y_B'].append(int(handle['csv_file_handle'][_line_idx][2]))
@@ -63,9 +63,9 @@ def _read_one_sample(_sample_idx, handle):
 		ordi = handle['csv_file_handle'][_line_idx][4][0]
 
 		if ordi == '>':
-			ordi = 1
+			_data['ordianl_relation'].append(1)
 		elif ordi == '<':
-			ordi = -1
+			_data['ordianl_relation'].append(-1)
 		elif ordi == '=':
 			print('Error in _read_one_sample()! The ordinal_relationship should never be = !!!!')
 			assert(False)
@@ -185,9 +185,9 @@ if cmd_params.test_model == 'our':
 		img = None #get rid of its reference
 
 		_single_data = {}
-		_single_data[0] = _read_one_sample(i, data_handle, orig_height, orig_width)
+		_single_data[0] = _read_one_sample(i, data_handle)
 
-		batch_output = model(Variable(_batch_input_cpu).cuda())
+		batch_output = model(Variable(_batch_input_cpu).cuda()).cpu().data
 
 		batch_output_min = torch.min(batch_output)
 		batch_output_max = torch.max(batch_output) - batch_output_min
@@ -207,7 +207,7 @@ if cmd_params.test_model == 'our':
 
 		_evaluate_correctness(orig_size_output, _single_data[0], our_result)
 
-		if i%100 == 0:
+		if i%100 == 0 and i != 0:
 			print_result(our_result)
 
 
