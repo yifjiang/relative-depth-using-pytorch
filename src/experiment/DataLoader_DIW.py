@@ -97,7 +97,7 @@ class DataLoader(object):
 		else:
 			self.relative_depth_handle = {}
 
-		self.n_relative_depth_sample = len(self.relative_depth_handle)
+		self.n_relative_depth_sample = len(self.relative_depth_handle)-1
 
 	def close(self):
 		pass
