@@ -170,7 +170,7 @@ def normalize_output_depth_with_NYU_mean_std(input):
 ### main entry ###
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-num_iter', default=1, type = int, help ='number of training iteration')
+parser.add_argument('-num_iter', default=1, type = int, help ='number of testing iteration')
 parser.add_argument('-prev_model_file', required=True, help='Absolute/relative path to the previous model file. Resume training from this file')
 parser.add_argument('-vis', default = False, type = bool, help='visualize output')
 parser.add_argument('-output_folder', default = './output_imgs', help = 'image output folder')
@@ -309,7 +309,7 @@ for i in range(0, n_iter):
 		new_image.paste(img, (0,0))
 		new_image.paste(orig_size_output, (img_original_width, 0))
 
-		new_image.save(os.path.join(cmd_params.output_folder, str(i)+'.png'))
+		new_image.save(os.path.join(cmd_params.output_folder, str(i+1)+'.png'))
 
 
 WKDR = torch.mean(WKDR, 0)
