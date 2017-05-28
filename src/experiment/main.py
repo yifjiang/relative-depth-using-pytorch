@@ -154,6 +154,7 @@ for i in range(0,g_args.it):
     total_loss += running_loss
     # end = time.time()
     print(('loss = {}'.format(running_loss)))
+    lfile.write('loss = {}'.format(running_loss))
     # print('time_used = {}'.format(end-start))
 
     if i % g_args.mt == 0 and i!=0:
