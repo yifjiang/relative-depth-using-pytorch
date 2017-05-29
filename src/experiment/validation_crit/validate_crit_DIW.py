@@ -8,7 +8,7 @@ def _is_correct(z_A, z_B, ground_truth):
 	elif z_A < z_B:
 		_classify_res = -1
 
-	return _classify_res == ground_truth
+	return _classify_res * ground_truth > 0
 
 def _count_correct(output, target):
 	y_A = target['y_A'].cpu().data.int().numpy()[0]

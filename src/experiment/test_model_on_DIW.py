@@ -93,7 +93,7 @@ def _evaluate_correctness(_batch_output, _batch_target, record):
 
 		ground_truth = _batch_target['ordianl_relation'][point_idx]
 
-		if (z_A-z_B * ground_truth)>0:
+		if ((z_A-z_B) * ground_truth)>0:
 			if ground_truth > 0:
 				record['n_gt_correct']+=1
 			else:
