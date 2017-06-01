@@ -161,7 +161,7 @@ for i in range(0,g_args.it):
         print('Saving model at iteration {}...'.format(i))
         save_model(g_model, g_args.rundir, i, config)
 
-    if i % g_args.et == 0 and i != 0:
+    if i % g_args.et == 0:
         print('Evaluatng at iteration {}'.format(i))
         train_eval_loss, train_eval_WKDR = evaluate(train_loader, g_model, g_criterion, 100) #TODO
         valid_eval_loss, valid_eval_WKDR = evaluate(valid_loader, g_model, g_criterion, 100)

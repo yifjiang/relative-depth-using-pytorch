@@ -20,7 +20,7 @@ def _count_correct(output, target, record):
 		z_A = output[0,0, y_A.data.int()[0], x_A.data.int()[0]].data[0] #zero-indexed
 		z_B = output[0,0, y_B.data.int()[0], x_B.data.int()[0]].data[0]
 
-		assert(x_A != x_B or y_A != y_B)
+		assert(x_A.data[0] != x_B.data[0] or y_A.data[0] != y_B.data[0])
 
 		ground_truth = target['ordianl_relation'][point_idx].data[0]
 
