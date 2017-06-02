@@ -163,7 +163,7 @@ def normalize_output_depth_with_NYU_mean_std(input):
 	transformed_z += mean_of_NYU_training
 
 	if torch.sum(transformed_z<0) > 0:
-		transformed_z = (transformed_z<0)*(torch.min(transformed_z>0)+0.00001)+transformed_z*(1- transformed_z<0)
+		transformed_z = (transformed_z<0).float()*(torch.min(transformed_z>0)+0.00001)+transformed_z*(1- transformed_z<0).float()
 
 	return transformed_z
 
