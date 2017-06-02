@@ -1,0 +1,6 @@
+data
+src/results
+src/experiment/output_imgs
+src/experiment/output_imgs_DIW
+src/experiment/DIW_test
+src/experiment/DIW_train_val
