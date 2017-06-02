@@ -1,0 +1,11 @@
+python main.py -lr 0.001 -bs 4 -it 100000 -t_depth_file 750_train_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -v_depth_file 45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -rundir ./results
+
+python main.py -lr 0.001 -bs 4 -it 100000 -t_depth_file 750_train_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -v_depth_file 45_validate_from_795_NYU_MITpaper_train_imgs_800_points_resize_240_320.csv -rundir ../results -start_from model_period2_12000.pt
+
+python test_on_one_image.py -prev_model_file ../results/Best_model_period3.pt -input_image ../../data/singleImages/4.png -output_image ../../data/singleImages/4-out.png
+
+python test_model_on_NYU.py -num_iter 1000 -prev_model_file ../results/Best_model_period1.pt -mode test -crop 8
+
+python test_model_on_DIW.py -num_iter 100 -prev_model_file ../results/Best_model_period1.pt -vis True
+
+python main.py -diw True -lr 0.0001 -bs 4 -m hourglass -it 200000 -t_depth_file DIW_train.csv -v_depth_file DIW_val.csv -rundir ../results
