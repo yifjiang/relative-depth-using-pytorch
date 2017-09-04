@@ -6,7 +6,7 @@ Neural Information Processing Systems (NIPS).
 
 # Setup
 
-1.Install pyTorch as described in http://http://pytorch.org#_.
+1.Install pyTorch as described in http://pytorch.org.
 
 2. Clone this repo.
 
