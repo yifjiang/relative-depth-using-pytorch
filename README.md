@@ -43,6 +43,8 @@ Please first run the following commands to download the test data from our proce
     tar -xzf hourglass3.tar.gz
     rm hourglass3.tar.gz
 
+Then change directory into `/relative_depth/src/experiment`.
+
 1. To evaluate the pre-trained model ***Ours***(model trained on the NYU labeled training subset) on the NYU dataset, run the following command:
 
         python test_model_on_NYU.py -num_iter 1000 -prev_model_file ../results/Best_model_period1.pt -mode test -crop 8
@@ -56,6 +58,8 @@ Please first run the following commands to download the test data from our proce
         python test_on_one_image.py -prev_model_file ../results/Best_model_period3.pt -input_image ../../data/singleImages/4.png -output_image ../../data/singleImages/4-out.png
 
 ## Training 
+
+Please first change directory into `/relative_depth/src/experiment`.
 
 To train the model ***Ours***(model trained on the NYU labeled training subset), please run the following command:
 
