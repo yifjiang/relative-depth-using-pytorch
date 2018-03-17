@@ -46,7 +46,7 @@ Then change directory into `/relative_depth/src/experiment`.
 
         python test_on_one_image.py -prev_model_file ../results/Best_model_period1.pt -input_image ../../data/4.png -output_image ../../data/4-out.png
 
-    and also a cpu version of it:
+    and also a cpu version of it (this script is confirmed to be able to run with pyTorch ver 0.1.12 and torchvision ver 0.1.18):
 
         python test_on_one_image_cpu.py -prev_model_file ../results/Best_model_period1.pt -input_image ../../data/4.png -output_image ../../data/4-out.png
 
