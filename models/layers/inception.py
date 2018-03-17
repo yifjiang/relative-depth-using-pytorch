@@ -38,10 +38,10 @@ class inception(nn.Module):
 		ret = []
 		for conv in (self.convs):
 			ret.append(conv(x))
-		# print(torch.cat(ret,dim=1))
 		return torch.cat(ret,dim=1)
 
 if __name__ == '__main__':
+	# testing
 	testModule = inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]])
 	print(testModule)
 	x = Variable(torch.rand(2,256,125,125))

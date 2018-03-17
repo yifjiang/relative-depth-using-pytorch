@@ -119,35 +119,6 @@ class Model(nn.Module):
 
 def get_model():
 	return Model().cuda()
-	# return nn.Sequential(
-	# 	nn.Conv2d(3,128,7,padding=3),
-	# 	nn.BatchNorm2d(128), 
-	# 	nn.ReLU(True),
-	# 	nn.AvgPool2d(2),
-	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
-	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
-	# 	nn.AvgPool2d(2),
-	# 	inception(128, [[32], [3,32,32], [5,32,32], [7,32,32]]),
-	# 	inception(128, [[64], [3,32,64], [5,32,64], [7,32,64]]),
-	# 	nn.AvgPool2d(2),
-	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
-	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
-	# 	nn.AvgPool2d(2),
-	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
-	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]),
-	# 	inception(256,[[64],[3,32,64],[5,32,64],[7,32,64]]), 
-	# 	nn.UpsamplingNearest2d(scale_factor=2),
-	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
-	# 	inception(256, [[64], [3,64,64], [7,64,64], [11,64,64]]),
-	# 	nn.UpsamplingNearest2d(scale_factor=2),
-	# 	inception(256, [[64], [3,32,64], [5,32,64], [7,32,64]]), 
-	# 	inception(256, [[32], [3,32,32], [5,32,32], [7,32,32]]), 
-	# 	nn.UpsamplingNearest2d(scale_factor=2),
-	# 	inception(128, [[32], [3,64,32], [5,64,32], [7,64,32]]),
-	# 	inception(128, [[16], [3,32,16], [7,32,16], [11,32,16]]),
-	# 	nn.UpsamplingNearest2d(scale_factor=2),
-	# 	nn.Conv2d(64,1,3,padding=1)
-	# 	).cuda()
 
 from .criterion.relative_depth import relative_depth_crit
 def get_criterion():
@@ -162,6 +133,7 @@ def ____get_depth_from_model_output(model_output):
 
 		
 if __name__ == '__main__':
+	# testing
 	from torch import optim
 	test = Model().cuda()
 	print(test)
