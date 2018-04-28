@@ -29,16 +29,17 @@ def main():
 
 	print('Processing sample ', thumb_filename)
 
+	img = orig_img.resize((_network_input_width, _network_input_height))
 	loader = transforms.Compose([
-		transforms.Scale((_network_input_width, _network_input_height)),
+		# transforms.Scale((_network_input_width, _network_input_height)),
 		transforms.ToTensor(),
 		# transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
 		])
-	img = loader(orig_img).float()
+	img = loader(img).float()
 	# print(img)
 	_batch_input_cpu[0,:,:,:] = (img)
 
-	_processed_input = torch.autograd.Variable(_batch_input_cpu.cuda())
+	_processed_input = torch.autograd.Variable(_batch_input_cpu)
 	batch_output = (model(_processed_input)).float()
 
 	a = batch_output[0,:,120,:]
@@ -51,13 +52,14 @@ def main():
 
 	t_back = transforms.Compose([
 		transforms.ToPILImage(),
-		transforms.Scale((orig_width, orig_height))
+		# transforms.Scale((orig_width, orig_height))
 		])
 	orig_size_output = batch_output.data[0].cpu()
 	# print(orig_size_output[0,0])
 	orig_size_output = orig_size_output - torch.min(orig_size_output)
 	orig_size_output = orig_size_output / torch.max(orig_size_output)
 	orig_size_output = t_back(orig_size_output)#.convert('RGB')
+	orig_size_output = orig_size_output.resize((orig_width, orig_height))
 
 	# orig_size_output.save(cmd_params.output_image)
 	new_image = Image.new('RGB', (orig_width*2, orig_height))
