@@ -39,7 +39,7 @@ def main():
 	# print(img)
 	_batch_input_cpu[0,:,:,:] = (img)
 
-	_processed_input = torch.autograd.Variable(_batch_input_cpu)
+	_processed_input = torch.autograd.Variable(_batch_input_cpu.cuda())
 	batch_output = (model(_processed_input)).float()
 
 	a = batch_output[0,:,120,:]
